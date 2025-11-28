@@ -35,14 +35,17 @@ const uploadFileToServer = async (file: File, documentType: DocumentType): Promi
     const data = await response.json();
     console.log('Upload response:', data);
     
+    // Get file name from response or use the original file name
+    const fileName = data.fileName || data.name || data.originalName || data.originalFilename || data.filename || file.name;
+    
     // Create a proper UploadedFile object
     const uploadedFile: UploadedFile = {
-      id: data.fileId || Math.random().toString(36).substring(2, 9),
-      name: file.name,
+      id: data.fileId || data.id || Math.random().toString(36).substring(2, 9),
+      name: fileName, // Use file name from response or original file name
       type: documentType,
-      size: file.size,
+      size: data.size || file.size,
       uploadDate: new Date(),
-      url: data.fileUrl || URL.createObjectURL(file),
+      url: data.fileUrl || data.url || URL.createObjectURL(file),
       fileId: data.fileId || data.id // Try multiple possible field names
     };
 
@@ -51,6 +54,147 @@ const uploadFileToServer = async (file: File, documentType: DocumentType): Promi
   } catch (error) {
     console.error('Error uploading file:', error);
     throw error;
+  }
+};
+
+// Function to fetch all files from the server
+const fetchAllFilesFromServer = async (): Promise<UploadedFile[]> => {
+  try {
+    console.log('Fetching all files from server...');
+    
+    const response = await fetch('https://cp-upload-docs.onrender.com/api/files', {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch files: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Raw API response:', data);
+    
+    // Handle different response structures
+    let filesArray: any[] = [];
+    
+    // Check if response is an array
+    if (Array.isArray(data)) {
+      filesArray = data;
+    } 
+    // Check if response has a data property
+    else if (data && Array.isArray(data.data)) {
+      filesArray = data.data;
+    }
+    // Check if response has a files property
+    else if (data && Array.isArray(data.files)) {
+      filesArray = data.files;
+    }
+    // Check if response has a results property
+    else if (data && Array.isArray(data.results)) {
+      filesArray = data.results;
+    }
+    
+    console.log('Parsed files array:', filesArray);
+    
+    // Transform API response to UploadedFile format
+    const files: UploadedFile[] = filesArray.map((file: any, index: number) => {
+      // Log the raw file object to see all available fields
+      console.log(`Processing file ${index + 1}:`, file);
+      console.log(`All keys in file object:`, Object.keys(file));
+      
+      // Try multiple possible field names for each property
+      const fileId = file.id || file.fileId || file._id || file.FileId || file.Id;
+      
+      // Try many possible field names for file name - check all common variations
+      // Also check for nested objects
+      let fileName = file.name || 
+                     file.fileName || 
+                     file.originalName || 
+                     file.originalFilename || 
+                     file.filename || 
+                     file.FileName ||
+                     file.OriginalName ||
+                     file.OriginalFilename ||
+                     file.original_name ||
+                     file.original_filename ||
+                     file.file_name ||
+                     file.Name ||
+                     file.NAME ||
+                     (file.file && file.file.name) ||
+                     (file.file && file.file.fileName) ||
+                     (file.file && file.file.originalName);
+      
+      // If still no name found, search more aggressively
+      if (!fileName || fileName === 'Unknown File') {
+        console.warn(`File ${index + 1} - No name found. All file properties:`, file);
+        console.warn(`File ${index + 1} - All values:`, Object.entries(file).map(([k, v]) => `${k}: ${typeof v === 'string' ? v : typeof v}`));
+        
+        // Try to find any string property that looks like a filename
+        // First check fields with 'name' in the key
+        for (const key in file) {
+          const value = file[key];
+          if (typeof value === 'string' && value.length > 0 && 
+              (value.includes('.') || value.length > 3) && 
+              key.toLowerCase().includes('name')) {
+            console.log(`Found potential name in field "${key}":`, value);
+            fileName = value;
+            break;
+          }
+        }
+        
+        // If still not found, check ALL string fields that look like filenames
+        if (!fileName || fileName === 'Unknown File') {
+          for (const key in file) {
+            const value = file[key];
+            // Check if it's a string that looks like a filename (has extension or is a reasonable length)
+            if (typeof value === 'string' && value.length > 0 && 
+                (value.includes('.') || (value.length > 5 && value.length < 255))) {
+              // Skip common non-name fields
+              if (!['id', 'type', 'url', 'path', 'size', 'date', 'created', 'updated'].includes(key.toLowerCase())) {
+                console.log(`Trying field "${key}" as potential name:`, value);
+                fileName = value;
+                break;
+              }
+            }
+          }
+        }
+      }
+      
+      const documentType = file.documentType || file.DocumentType || file.type || file.document_type || file.Type || 'Pan Card';
+      const fileSize = file.size || file.fileSize || file.Size || file.sizeInBytes || 0;
+      const uploadDate = file.uploadDate || file.uploadedAt || file.createdAt || file.created_at || file.date || file.Date || new Date();
+      const fileUrl = file.url || file.fileUrl || file.downloadUrl || file.path || file.Path;
+      
+      // Log the final mapped values
+      console.log(`File ${index + 1} mapped:`, {
+        fileId,
+        fileName,
+        documentType,
+        fileSize,
+        uploadDate,
+        fileUrl
+      });
+      
+      return {
+        id: fileId || Math.random().toString(36).substring(2, 9),
+        name: fileName || 'Unknown File',
+        type: documentType as DocumentType,
+        size: fileSize,
+        uploadDate: uploadDate ? new Date(uploadDate) : new Date(),
+        url: fileUrl,
+        fileId: fileId
+      };
+    }).filter((file: UploadedFile) => {
+      // Only filter out files that are completely invalid (no name AND no fileId)
+      // If file has a fileId, show it even if name is "Unknown File"
+      // If file has a name (not "Unknown File"), show it
+      return file.fileId || (file.name && file.name !== 'Unknown File');
+    });
+    
+    console.log('Transformed files:', files);
+    return files;
+  } catch (error) {
+    console.error('Error fetching files:', error);
+    return [];
   }
 };
 
@@ -111,8 +255,24 @@ const viewFileFromServer = async (fileId: string, fileName: string) => {
     // Create object URL for viewing
     const fileUrl = window.URL.createObjectURL(blob);
     
-    // Open in new tab for viewing
-    window.open(fileUrl, '_blank');
+    // Determine file type and open accordingly
+    const fileExtension = fileName.split('.').pop()?.toLowerCase();
+    
+    if (fileExtension === 'pdf') {
+      // For PDFs, open in new tab
+      window.open(fileUrl, '_blank');
+    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension || '')) {
+      // For images, open in new tab
+      window.open(fileUrl, '_blank');
+    } else {
+      // For other files, try to open in new tab
+      window.open(fileUrl, '_blank');
+    }
+    
+    // Clean up the object URL after a delay
+    setTimeout(() => {
+      window.URL.revokeObjectURL(fileUrl);
+    }, 1000);
     
     console.log('File opened for viewing:', fileName);
     return true;
@@ -131,40 +291,73 @@ export default function BookingDetails() {
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
 
-  // Load saved files from localStorage on component mount
+  // Fetch files from API on component mount
   useEffect(() => {
-    const savedFiles = localStorage.getItem(`uploadedFiles_${bookingId}`);
-    if (savedFiles) {
+    const loadFiles = async () => {
+      setIsLoading(true);
       try {
-        const parsedFiles = JSON.parse(savedFiles);
-        console.log('Loaded files from localStorage:', parsedFiles);
+        // Fetch files from API - this is the source of truth
+        const apiFiles = await fetchAllFilesFromServer();
+        console.log('Files from API (setting to state):', apiFiles);
         
-        const filesWithDates = parsedFiles.map((file: any) => ({
-          ...file,
-          uploadDate: new Date(file.uploadDate)
-        }));
-        setUploadedFiles(filesWithDates);
+        // Only use API files, don't merge with localStorage
+        // API is the source of truth
+        if (apiFiles.length > 0) {
+          setUploadedFiles(apiFiles);
+        } else {
+          // If no files from API, check localStorage as fallback
+          const savedFiles = localStorage.getItem(`uploadedFiles_${bookingId}`);
+          if (savedFiles) {
+            try {
+              const parsedFiles = JSON.parse(savedFiles);
+              const localFiles = parsedFiles.map((file: any) => ({
+                ...file,
+                uploadDate: new Date(file.uploadDate)
+              }));
+              setUploadedFiles(localFiles);
+            } catch (error) {
+              console.error('Error parsing saved files:', error);
+              setUploadedFiles([]);
+            }
+          } else {
+            setUploadedFiles([]);
+          }
+        }
       } catch (error) {
-        console.error('Error parsing saved files:', error);
+        console.error('Error loading files:', error);
+        setUploadedFiles([]);
+      } finally {
+        setIsLoading(false);
       }
-    }
-    setIsLoading(false);
+    };
+    
+    loadFiles();
   }, [bookingId]);
-
-  // Save files to localStorage whenever they change
-  useEffect(() => {
-    if (!isLoading) {
-      console.log('Saving files to localStorage:', uploadedFiles);
-      localStorage.setItem(`uploadedFiles_${bookingId}`, JSON.stringify(uploadedFiles));
-    }
-  }, [uploadedFiles, bookingId, isLoading]);
 
   const handleFileUpload = async (file: File, documentType: DocumentType) => {
     try {
-      console.log('Starting file upload...');
+      console.log('Starting file upload... File name:', file.name);
       const uploadedFile = await uploadFileToServer(file, documentType);
-      console.log('Upload successful, adding to state:', uploadedFile);
-      setUploadedFiles(prev => [...prev, uploadedFile]);
+      console.log('Upload successful, uploaded file object:', uploadedFile);
+      
+      // Add the uploaded file immediately to the UI with the correct name
+      setUploadedFiles(prev => {
+        // Check if file already exists (by fileId)
+        const exists = prev.some(f => f.fileId === uploadedFile.fileId && uploadedFile.fileId);
+        if (!exists) {
+          return [...prev, uploadedFile];
+        }
+        return prev;
+      });
+      
+      // Refresh files from API to get the latest list (including the newly uploaded file)
+      // This ensures we have the server's version of the file
+      setTimeout(async () => {
+        const apiFiles = await fetchAllFilesFromServer();
+        console.log('Refreshed files from API after upload:', apiFiles);
+        setUploadedFiles(apiFiles);
+      }, 500); // Small delay to ensure server has processed the upload
+      
       return uploadedFile;
     } catch (error) {
       console.error('Error uploading file:', error);
