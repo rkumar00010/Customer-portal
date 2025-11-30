@@ -12,7 +12,7 @@ import { Separator } from '../components/ui/separator';
 import { getBookingById } from '../utils/bookingsData';
 import jsPDF from 'jspdf';
 
-// Function to upload file to the server - DEBUGGED VERSION
+// Function to upload file to the server 
 const uploadFileToServer = async (file: File, documentType: DocumentType): Promise<UploadedFile> => {
   const formData = new FormData();
   formData.append('file', file);
@@ -963,16 +963,16 @@ finally {
             <CardContent>
               <Tabs defaultValue="overview" className="mt-4">
                 <TabsList className="grid w-full grid-cols-4 bg-gray-800/50 rounded-full p-1">
-                  <TabsTrigger value="overview" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
+                  <TabsTrigger value="overview" className="rounded-full text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
                     Overview
                   </TabsTrigger>
-                  <TabsTrigger value="milestones" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
+                  <TabsTrigger value="milestones" className="rounded-full text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
                     Milestones
                   </TabsTrigger>
-                  <TabsTrigger value="invoices" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
+                  <TabsTrigger value="invoices" className="rounded-full text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
                     Invoices
                   </TabsTrigger>
-                  <TabsTrigger value="documents" className="rounded-full data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
+                  <TabsTrigger value="documents" className="rounded-full text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600">
                     Files
                   </TabsTrigger>
                 </TabsList>
@@ -1197,9 +1197,13 @@ finally {
                               >
                                 <div className="flex items-center gap-3">
                                   {status === 'COMPLETE' ? (
-                                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                                      <CheckCircle2 className="w-4 h-4 text-white" />
+                                    </div>
                                   ) : (
-                                    <Clock className="w-5 h-5 text-yellow-500" />
+                                    <div className="w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center">
+                                      <Clock className="w-4 h-4 text-white" />
+                                    </div>
                                   )}
                                   <div className="flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-blue-400" />
@@ -1365,9 +1369,13 @@ finally {
                               >
                                 <div className="flex items-center gap-3">
                                   {status === 'COMPLETE' ? (
-                                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                                    <div className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center">
+                                      <CheckCircle2 className="w-4 h-4 text-white" />
+                                    </div>
                                   ) : (
-                                    <Clock className="w-5 h-5 text-yellow-500" />
+                                    <div className="w-5 h-5 rounded-full bg-yellow-500 flex items-center justify-center">
+                                      <Clock className="w-4 h-4 text-white" />
+                                    </div>
                                   )}
                                   <div className="flex items-center gap-2">
                                     <FileText className="w-4 h-4 text-blue-400" />
