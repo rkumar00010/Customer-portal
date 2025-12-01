@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, Circle, Clock, DollarSign, Upload as UploadIcon, File as FileIcon } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, DollarSign, Upload as UploadIcon, File as FileIcon, Download, Eye } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
@@ -9,6 +9,18 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
+interface UploadedMilestoneDocument {
+  id: string;
+  title: string;
+  amount: string;
+  status: string;
+  dueDate: string;
+  documentType: 'Demand Letter' | 'Invoice';
+  fileName: string;
+  fileSize: number;
+  fileUrl: string;
+}
+
 export default function PaymentMilestonesTab() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [title, setTitle] = useState('');
@@ -17,6 +29,7 @@ export default function PaymentMilestonesTab() {
   const [dueDate, setDueDate] = useState('');
   const [documentType, setDocumentType] = useState<'Demand Letter' | 'Invoice' | ''>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadedDocs, setUploadedDocs] = useState<UploadedMilestoneDocument[]>([]);
 
   const milestones = [
     {
@@ -118,6 +131,50 @@ export default function PaymentMilestonesTab() {
   const totalAmount = milestones.reduce((sum, m) => sum + m.amount, 0);
   const completionPercentage = (completedAmount / totalAmount) * 100;
 
+  const resetForm = () => {
+    setTitle('');
+    setAmount('');
+    setStatus('');
+    setDueDate('');
+    setDocumentType('');
+    setSelectedFile(null);
+  };
+
+  const handleSaveAndUpload = () => {
+    if (!title || !amount || !status || !dueDate || !documentType || !selectedFile) return;
+
+    const fileUrl = URL.createObjectURL(selectedFile);
+
+    const newDoc: UploadedMilestoneDocument = {
+      id: `${Date.now()}`,
+      title,
+      amount,
+      status,
+      dueDate,
+      documentType: documentType as 'Demand Letter' | 'Invoice',
+      fileName: selectedFile.name,
+      fileSize: selectedFile.size,
+      fileUrl,
+    };
+
+    setUploadedDocs(prev => [newDoc, ...prev]);
+    setIsUploadModalOpen(false);
+    resetForm();
+  };
+
+  const handleViewDocument = (doc: UploadedMilestoneDocument) => {
+    window.open(doc.fileUrl, '_blank');
+  };
+
+  const handleDownloadDocument = (doc: UploadedMilestoneDocument) => {
+    const link = document.createElement('a');
+    link.href = doc.fileUrl;
+    link.download = doc.fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -167,6 +224,84 @@ export default function PaymentMilestonesTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Uploaded milestone documents list */}
+      {uploadedDocs.length > 0 && (
+        <Card className="bg-gray-900/60 border-gray-800">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <FileIcon className="w-5 h-5 text-blue-400" />
+              Uploaded Milestone Documents
+            </CardTitle>
+            <CardDescription className="text-gray-400">
+              All milestone documents you have uploaded from this section
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {uploadedDocs.map((doc) => (
+                <div
+                  key={doc.id}
+                  className="flex items-center justify-between p-3 bg-gray-800/60 rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  <div className="flex items-start gap-3">
+                    <FileIcon className="w-5 h-5 text-blue-400 mt-1" />
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-white font-medium text-sm">{doc.title}</p>
+                        <Badge
+                          className={`rounded-full px-2 py-0.5 text-[10px] ${
+                            doc.documentType === 'Demand Letter'
+                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                              : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                          }`}
+                        >
+                          {doc.documentType}
+                        </Badge>
+                        <Badge
+                          className={`rounded-full px-2 py-0.5 text-[10px] ${
+                            doc.status === 'Completed'
+                              ? 'bg-green-500/20 text-green-300 border-green-500/40'
+                              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
+                          }`}
+                        >
+                          {doc.status}
+                        </Badge>
+                      </div>
+                      <p className="text-gray-400 text-xs mb-1">
+                        Amount: ₹{Number(doc.amount).toLocaleString('en-IN')} • Due: {doc.dueDate}
+                      </p>
+                      <p className="text-gray-500 text-[11px]">
+                        File: {doc.fileName} • {(doc.fileSize / 1024).toFixed(1)} KB
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-400 hover:text-blue-400 hover:bg-gray-700/70"
+                      onClick={() => handleViewDocument(doc)}
+                      title="View"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-gray-400 hover:text-green-400 hover:bg-gray-700/70"
+                      onClick={() => handleDownloadDocument(doc)}
+                      title="Download"
+                    >
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Milestones Timeline */}
       <Card className="bg-gray-900/50 border-gray-800 backdrop-blur-xl">
@@ -383,12 +518,12 @@ export default function PaymentMilestonesTab() {
             )}
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="w-full flex justify-center gap-3 pt-2">
               <Button
-                variant="outline"
-                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                className="bg-white text-black hover:bg-gray-100 border border-gray-300"
                 onClick={() => {
                   setIsUploadModalOpen(false);
+                  resetForm();
                 }}
               >
                 Cancel
@@ -396,17 +531,8 @@ export default function PaymentMilestonesTab() {
               <Button
                 disabled={!title || !amount || !status || !dueDate || !documentType || !selectedFile}
                 className="bg-[#6f60ff] hover:bg-[#5a4dcc] text-white"
-                onClick={() => {
-                  console.log('Milestone document payload:', {
-                    title,
-                    amount,
-                    status,
-                    dueDate,
-                    documentType,
-                    file: selectedFile,
-                  });
-                  setIsUploadModalOpen(false);
-                }}
+                style={{ backgroundColor: '#6f60ff', color: '#ffffff' }}
+                onClick={handleSaveAndUpload}
               >
                 Save & Upload
               </Button>
