@@ -1,9 +1,23 @@
-import { CheckCircle2, Circle, Clock, DollarSign } from 'lucide-react';
+import { useState } from 'react';
+import { CheckCircle2, Circle, Clock, DollarSign, Upload as UploadIcon, File as FileIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 export default function PaymentMilestonesTab() {
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [amount, setAmount] = useState('');
+  const [status, setStatus] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [documentType, setDocumentType] = useState<'Demand Letter' | 'Invoice' | ''>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   const milestones = [
     {
       id: 1,
@@ -107,9 +121,19 @@ export default function PaymentMilestonesTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-white text-2xl">Payment Milestones</h2>
-        <p className="text-gray-400 mt-1">Track your payment schedule and milestones</p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h2 className="text-white text-2xl">Payment Milestones</h2>
+          <p className="text-gray-400 mt-1">Track your payment schedule and milestones</p>
+        </div>
+        <Button
+          className="text-white hover:opacity-90 flex items-center gap-2"
+          style={{ backgroundColor: "#6f60ff" }}
+          onClick={() => setIsUploadModalOpen(true)}
+        >
+          <UploadIcon className="w-4 h-4" />
+          Upload Document
+        </Button>
       </div>
 
       {/* Summary Card */}
@@ -228,6 +252,168 @@ export default function PaymentMilestonesTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Upload Document Modal */}
+      <Dialog open={isUploadModalOpen} onOpenChange={setIsUploadModalOpen}>
+        <DialogContent className="lg:max-w-[600px] bg-gray-900 border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-white">Upload Milestone Document</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Fill the milestone details and upload the related document
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Top Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Title</Label>
+                <Input
+                  className="bg-gray-800 border-gray-700 text-white"
+                  placeholder="Enter title (e.g. Second Installment)"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Amount</Label>
+                <Input
+                  type="number"
+                  className="bg-gray-800 border-gray-700 text-white"
+                  placeholder="Enter amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Status</Label>
+                <Select
+                  value={status}
+                  onValueChange={(val) => setStatus(val)}
+                >
+                  <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Due Date</Label>
+                <Input
+                  type="date"
+                  className="bg-gray-800 border-gray-700 text-white"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Document Type Picklist */}
+            <div className="space-y-2">
+              <Label className="text-white text-sm">Document Type</Label>
+              <Select
+                value={documentType}
+                onValueChange={(val: 'Demand Letter' | 'Invoice') => setDocumentType(val)}
+              >
+                <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-800 border-gray-700 text-white">
+                  <SelectItem value="Demand Letter">Demand Letter</SelectItem>
+                  <SelectItem value="Invoice">Invoice</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* File Upload Area - show only after document type is selected */}
+            {documentType && (
+              <div className="space-y-2">
+                <Label className="text-white text-sm">
+                  Upload {documentType}
+                </Label>
+                <label
+                  className="border-2 border-dashed border-gray-700 hover:border-gray-600 bg-gray-800/50 rounded-lg p-6 text-center cursor-pointer transition-colors flex flex-col items-center justify-center gap-2"
+                >
+                  <UploadIcon className="w-8 h-8 text-gray-400" />
+                  <p className="text-sm text-gray-300">
+                    <span className="text-blue-400 font-medium">Click to upload</span> or drag and drop
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    PDF, PNG, JPG, JPEG (max. 10MB)
+                  </p>
+                  <Input
+                    type="file"
+                    className="hidden"
+                    accept=".pdf,.png,.jpg,.jpeg"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      setSelectedFile(file);
+                    }}
+                  />
+                </label>
+
+                {selectedFile && (
+                  <div className="flex items-center justify-between bg-gray-800/70 rounded-lg px-3 py-2 mt-2">
+                    <div className="flex items-center gap-2">
+                      <FileIcon className="w-4 h-4 text-gray-400" />
+                      <span className="text-sm text-gray-200 truncate max-w-[260px]">
+                        {selectedFile.name}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {(selectedFile.size / 1024).toFixed(1)} KB
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-gray-400 hover:text-red-400"
+                      onClick={() => setSelectedFile(null)}
+                    >
+                      Clear
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="border-gray-700 text-gray-300 hover:bg-gray-800"
+                onClick={() => {
+                  setIsUploadModalOpen(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={!title || !amount || !status || !dueDate || !documentType || !selectedFile}
+                className="bg-[#6f60ff] hover:bg-[#5a4dcc] text-white"
+                onClick={() => {
+                  console.log('Milestone document payload:', {
+                    title,
+                    amount,
+                    status,
+                    dueDate,
+                    documentType,
+                    file: selectedFile,
+                  });
+                  setIsUploadModalOpen(false);
+                }}
+              >
+                Save & Upload
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
