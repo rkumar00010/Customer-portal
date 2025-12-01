@@ -127,7 +127,7 @@ export default function PaymentMilestonesTab() {
   const completedAmount = milestones
     .filter(m => m.status === 'completed')
     .reduce((sum, m) => sum + m.amount, 0);
-  
+
   const totalAmount = milestones.reduce((sum, m) => sum + m.amount, 0);
   const completionPercentage = (completedAmount / totalAmount) * 100;
 
@@ -214,7 +214,7 @@ export default function PaymentMilestonesTab() {
               <p className="text-orange-400 text-2xl">₹{((totalAmount - completedAmount) / 10000000).toFixed(2)} Cr</p>
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">Completion</span>
@@ -250,20 +250,18 @@ export default function PaymentMilestonesTab() {
                       <div className="flex items-center gap-2 mb-1">
                         <p className="text-white font-medium text-sm">{doc.title}</p>
                         <Badge
-                          className={`rounded-full px-2 py-0.5 text-[10px] ${
-                            doc.documentType === 'Demand Letter'
+                          className={`rounded-full px-2 py-0.5 text-[10px] ${doc.documentType === 'Demand Letter'
                               ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
                               : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                          }`}
+                            }`}
                         >
                           {doc.documentType}
                         </Badge>
                         <Badge
-                          className={`rounded-full px-2 py-0.5 text-[10px] ${
-                            doc.status === 'Completed'
+                          className={`rounded-full px-2 py-0.5 text-[10px] ${doc.status === 'Completed'
                               ? 'bg-green-500/20 text-green-300 border-green-500/40'
                               : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
-                          }`}
+                            }`}
                         >
                           {doc.status}
                         </Badge>
@@ -317,14 +315,13 @@ export default function PaymentMilestonesTab() {
                 {index !== milestones.length - 1 && (
                   <div className="absolute left-5 top-12 w-0.5 h-full bg-gray-800"></div>
                 )}
-                
-                <div className={`flex gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer hover:scale-[1.01] ${
-                  milestone.status === 'completed' 
-                    ? 'bg-green-500/5 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30' 
+
+                <div className={`flex gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer hover:scale-[1.01] ${milestone.status === 'completed'
+                    ? 'bg-green-500/5 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
                     : milestone.status === 'pending'
-                    ? 'bg-orange-500/5 border-orange-500/20 hover:bg-orange-500/10 hover:border-orange-500/30'
-                    : 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-800/70 hover:border-gray-700'
-                }`}>
+                      ? 'bg-orange-500/5 border-orange-500/20 hover:bg-orange-500/10 hover:border-orange-500/30'
+                      : 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-800/70 hover:border-gray-700'
+                  }`}>
                   {/* Status Icon */}
                   <div className="flex-shrink-0">
                     {milestone.status === 'completed' ? (
@@ -349,13 +346,12 @@ export default function PaymentMilestonesTab() {
                         <h4 className="text-white">{milestone.name}</h4>
                         <p className="text-gray-400 text-sm mt-1">{milestone.description}</p>
                       </div>
-                      <Badge className={`rounded-full flex-shrink-0 ${
-                        milestone.status === 'completed' 
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                      <Badge className={`rounded-full flex-shrink-0 ${milestone.status === 'completed'
+                          ? 'bg-green-500/20 text-green-400 border-green-500/30'
                           : milestone.status === 'pending'
-                          ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-                          : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
-                      }`}>
+                            ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                            : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                        }`}>
                         {milestone.status}
                       </Badge>
                     </div>
@@ -426,7 +422,7 @@ export default function PaymentMilestonesTab() {
                 <Label className="text-white text-sm">Status</Label>
                 <Select
                   value={status}
-                  onValueChange={(val) => setStatus(val)}
+                  onValueChange={(val: any) => setStatus(val)}
                 >
                   <SelectTrigger className="w-full bg-gray-800 border-gray-700 text-white">
                     <SelectValue placeholder="Select status" />
@@ -438,15 +434,21 @@ export default function PaymentMilestonesTab() {
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-white text-sm">Due Date</Label>
-                <Input
-                  type="date"
-                  className="bg-gray-800 border-gray-700 text-white"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
+          <div className="space-y-2">
+  <Label className="text-white text-sm">Due Date</Label>
+  <Input
+    type="date"
+    className="bg-black border-gray-700 text-white"
+    value={dueDate}
+    onChange={(e) => setDueDate(e.target.value)}
+    style={{
+      color: "black",               
+      filter: "invert(1)",         
+      backgroundColor: "transparent" 
+    }}
+  />
+</div>
+
             </div>
 
             {/* Document Type Picklist */}

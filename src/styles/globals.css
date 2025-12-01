@@ -129,6 +129,13 @@
   }
 }
 
+/* (date input calendar icon customizations removed on user request) */
+
+/* Hide default dialog close button for upload-document modal */
+.hide-dialog-close [data-slot="dialog-close"] {
+  display: none;
+}
+
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */

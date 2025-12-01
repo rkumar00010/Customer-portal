@@ -101,17 +101,9 @@ export function UploadDocumentModal({ isOpen, onClose, onUpload }: UploadDocumen
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="lg:max-w-[500px] bg-gray-900 border-gray-800">
+      <DialogContent className="lg:max-w-[500px] bg-gray-900 border-gray-800 hide-dialog-close">
         <DialogHeader>
-          <div className="flex justify-between items-center">
-            <DialogTitle className="text-white">Upload Documents</DialogTitle>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-white"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
+          <DialogTitle className="text-white">Upload Documents</DialogTitle>
           <DialogDescription className="text-gray-400">
             Upload your documents for verification
           </DialogDescription>

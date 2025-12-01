@@ -1092,9 +1092,9 @@ finally {
                     </CardContent>
                   </Card>
                   
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
                     {/* Left Side - Uploaded Files */}
-                    <Card className="bg-gray-900/50 border-gray-800">
+                    {/* <Card className="bg-gray-900/50 border-gray-800">
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-white">Uploaded Files ({uploadedFiles.length})</CardTitle>
@@ -1173,7 +1173,7 @@ finally {
                           </div>
                         )}
                       </CardContent>
-                    </Card>
+                    </Card> */}
 
                     {/* Right Side - Document Checklist */}
                     <Card className="bg-gray-900/50 border-gray-800">
