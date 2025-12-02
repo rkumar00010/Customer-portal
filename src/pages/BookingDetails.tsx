@@ -1333,7 +1333,8 @@ finally {
                           </div>
                         ) : (
                           <div className="text-center py-8">
-                            <FileIcon className="w-12 h-12 text-gray-600 mx-auto mb-3" />
+                            <FileIcon className="w-12 h-12 mx-auto mb-3" color="white" />
+
                             <p className="text-gray-400">No files uploaded yet</p>
                             <Button 
                               onClick={() => setIsUploadModalOpen(true)}

@@ -251,16 +251,16 @@ export default function PaymentMilestonesTab() {
                         <p className="text-white font-medium text-sm">{doc.title}</p>
                         <Badge
                           className={`rounded-full px-2 py-0.5 text-[10px] ${doc.documentType === 'Demand Letter'
-                              ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
-                              : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                            ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                            : 'bg-blue-500/20 text-blue-300 border-blue-500/40'
                             }`}
                         >
                           {doc.documentType}
                         </Badge>
                         <Badge
                           className={`rounded-full px-2 py-0.5 text-[10px] ${doc.status === 'Completed'
-                              ? 'bg-green-500/20 text-green-300 border-green-500/40'
-                              : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
+                            ? 'bg-green-500/20 text-green-300 border-green-500/40'
+                            : 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40'
                             }`}
                         >
                           {doc.status}
@@ -317,10 +317,10 @@ export default function PaymentMilestonesTab() {
                 )}
 
                 <div className={`flex gap-4 p-4 rounded-xl border transition-all duration-300 cursor-pointer hover:scale-[1.01] ${milestone.status === 'completed'
-                    ? 'bg-green-500/5 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
-                    : milestone.status === 'pending'
-                      ? 'bg-orange-500/5 border-orange-500/20 hover:bg-orange-500/10 hover:border-orange-500/30'
-                      : 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-800/70 hover:border-gray-700'
+                  ? 'bg-green-500/5 border-green-500/20 hover:bg-green-500/10 hover:border-green-500/30'
+                  : milestone.status === 'pending'
+                    ? 'bg-orange-500/5 border-orange-500/20 hover:bg-orange-500/10 hover:border-orange-500/30'
+                    : 'bg-gray-800/50 border-gray-700/50 hover:bg-gray-800/70 hover:border-gray-700'
                   }`}>
                   {/* Status Icon */}
                   <div className="flex-shrink-0">
@@ -347,10 +347,10 @@ export default function PaymentMilestonesTab() {
                         <p className="text-gray-400 text-sm mt-1">{milestone.description}</p>
                       </div>
                       <Badge className={`rounded-full flex-shrink-0 ${milestone.status === 'completed'
-                          ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                          : milestone.status === 'pending'
-                            ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
-                            : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                        ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                        : milestone.status === 'pending'
+                          ? 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+                          : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
                         }`}>
                         {milestone.status}
                       </Badge>
@@ -434,20 +434,20 @@ export default function PaymentMilestonesTab() {
                 </Select>
               </div>
 
-          <div className="space-y-2">
-  <Label className="text-white text-sm">Due Date</Label>
-  <Input
-    type="date"
-    className="bg-black border-gray-700 text-white"
-    value={dueDate}
-    onChange={(e) => setDueDate(e.target.value)}
-    style={{
-      color: "black",               
-      filter: "invert(1)",         
-      backgroundColor: "transparent" 
-    }}
-  />
-</div>
+              <div className="space-y-2">
+                <Label className="text-white text-sm">Due Date</Label>
+                <Input
+                  type="date"
+                  className="bg-black border-gray-700 text-white"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  style={{
+                    color: "black",
+                    filter: "invert(1)",
+                    backgroundColor: "transparent"
+                  }}
+                />
+              </div>
 
             </div>
 
