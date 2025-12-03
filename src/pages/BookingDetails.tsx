@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router';
-import { Building2, MapPin, ArrowLeft, Calendar, IndianRupee, Home, Download, FileText, Clock, CheckCircle2, Circle, TrendingUp, User, Mail, Phone, Hash, File as FileIcon, Paperclip, Upload as UploadIcon, Eye, Plus } from 'lucide-react';
+import { Building2, MapPin, ArrowLeft, Calendar, IndianRupee, Home, Download, FileText, Clock, CheckCircle2, Circle, TrendingUp, User, Mail, Phone, Hash, File as FileIcon, Paperclip, Upload as UploadIcon, Eye, Plus, FileCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { UploadDocumentModal, type DocumentType, type UploadedFile } from '../components/UploadDocumentModal';
 import { format } from 'date-fns';
@@ -9,6 +9,9 @@ import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Progress } from '../components/ui/progress';
 import { Separator } from '../components/ui/separator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { Checkbox } from '../components/ui/checkbox';
+import { Label } from '../components/ui/label';
 import { getBookingById } from '../utils/bookingsData';
 import jsPDF from 'jspdf';
 
@@ -286,10 +289,41 @@ export default function BookingDetails() {
   const { bookingId } = useParams<{ bookingId: string }>();
   const navigate = useNavigate();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isRaiseRequestModalOpen, setIsRaiseRequestModalOpen] = useState(false);
+  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [downloadingFileId, setDownloadingFileId] = useState<string | null>(null);
   const [viewingFileId, setViewingFileId] = useState<string | null>(null);
+
+  const documentOptions = [
+    'SOA',
+    'Demand Letter',
+    'Allotment Letter',
+    'Possession Letter',
+    // 'Agreement to Sell'
+  ];
+
+  const handleDocumentToggle = (document: string) => {
+    setSelectedDocuments(prev => 
+      prev.includes(document)
+        ? prev.filter(doc => doc !== document)
+        : [...prev, document]
+    );
+  };
+
+  const handleRaiseRequestSubmit = () => {
+    if (selectedDocuments.length > 0) {
+      console.log('Selected documents:', selectedDocuments);
+      setShowSuccessMessage(true);
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+        setIsRaiseRequestModalOpen(false);
+        setSelectedDocuments([]);
+      }, 2000);
+    }
+  };
 
   // Fetch files from API on component mount
   useEffect(() => {
@@ -948,15 +982,25 @@ finally {
                   </CardDescription>
                 </div>
 
-                {/* Right Side Upload Button */}
-                <Button
-                  className="text-white hover:opacity-90 flex items-center gap-2"
-                  style={{ backgroundColor: "#6f60ff" }}
-                  onClick={() => setIsUploadModalOpen(true)}
-                >
-                  <UploadIcon className="w-4 h-4" />
-                  Upload Document
-                </Button>
+                {/* Right Side Buttons */}
+                <div className="flex items-center gap-3">
+                  <Button
+                    className="text-white hover:opacity-90 flex items-center gap-2"
+                    style={{ backgroundColor: "#6f60ff" }}
+                    onClick={() => setIsUploadModalOpen(true)}
+                  >
+                    <UploadIcon className="w-4 h-4" />
+                    Upload Document
+                  </Button>
+                  <Button
+                    className="text-white hover:opacity-90 flex items-center gap-2"
+                    style={{ backgroundColor: "#6f60ff" }}
+                    onClick={() => setIsRaiseRequestModalOpen(true)}
+                  >
+                    <FileCheck className="w-4 h-4" />
+                    Raise Request
+                  </Button>
+                </div>
               </div>
             </CardHeader>
 
@@ -1800,6 +1844,92 @@ finally {
         onClose={() => setIsUploadModalOpen(false)}
         onUpload={handleFileUpload}
       />
+
+      {/* Raise Request Modal */}
+      <Dialog open={isRaiseRequestModalOpen} onOpenChange={setIsRaiseRequestModalOpen}>
+        <DialogContent className="lg:max-w-[500px] bg-gray-900 border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-white">Raise Document Request</DialogTitle>
+            <DialogDescription className="text-gray-400">
+              Select the documents you want to request
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            {/* Document Selection */}
+            <div className="space-y-3">
+              <Label className="text-white text-sm">Select Documents</Label>
+              <div className="space-y-3">
+                {documentOptions.map((doc) => (
+                  <div
+                    key={doc}
+                    className="flex items-center p-3 bg-gray-800/50 rounded-lg hover:bg-gray-800/70 transition-colors"
+                  >
+                    <Checkbox
+                      id={doc}
+                      checked={selectedDocuments.includes(doc)}
+                      onCheckedChange={(checked:any) => {
+                        if (checked) {
+                          setSelectedDocuments(prev => [...prev, doc]);
+                        } else {
+                          setSelectedDocuments(prev => prev.filter(d => d !== doc));
+                        }
+                      }}
+                      className="border-gray-600 data-[state=checked]:bg-[#6f60ff] data-[state=checked]:border-[#6f60ff] data-[state=checked]:text-black cursor-pointer"
+                      style={{ marginRight: '20px' }}
+                    />
+                    <Label
+                      htmlFor={doc}
+                      className="text-white text-sm font-normal cursor-pointer flex-1"
+                      onClick={() => {
+                        if (selectedDocuments.includes(doc)) {
+                          setSelectedDocuments(prev => prev.filter(d => d !== doc));
+                        } else {
+                          setSelectedDocuments(prev => [...prev, doc]);
+                        }
+                      }}
+                    >
+                      {doc}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Success Message */}
+            {showSuccessMessage && (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
+                <p className="text-green-400 text-sm text-center">
+                  Your request has been raise successfully.
+                </p>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <div className="flex justify-center gap-3 pt-2">
+              <Button
+                variant="outline"
+                className="border-gray-700 text-black-300 hover:bg-gray-800"
+                onClick={() => {
+                  setIsRaiseRequestModalOpen(false);
+                  setSelectedDocuments([]);
+                  setShowSuccessMessage(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={selectedDocuments.length === 0}
+                className="bg-[#6f60ff] hover:bg-[#5a4dcc] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleRaiseRequestSubmit}
+                style={{ backgroundColor: selectedDocuments.length > 0 ? "#6f60ff" : undefined }}
+              >
+                Submit
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
