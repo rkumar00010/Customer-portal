@@ -316,12 +316,14 @@ export default function BookingDetails() {
   const handleRaiseRequestSubmit = () => {
     if (selectedDocuments.length > 0) {
       console.log('Selected documents:', selectedDocuments);
+      // Close modal immediately
+      setIsRaiseRequestModalOpen(false);
+      setSelectedDocuments([]);
+      // Show success message outside modal
       setShowSuccessMessage(true);
       setTimeout(() => {
         setShowSuccessMessage(false);
-        setIsRaiseRequestModalOpen(false);
-        setSelectedDocuments([]);
-      }, 2000);
+      }, 3000);
     }
   };
 
@@ -946,6 +948,20 @@ finally {
 
   return (
     <>
+      {/* Success Message Toast - Outside Modal */}
+      {showSuccessMessage && (
+        <div className="fixed top-4 left-0 right-0 z-50 flex justify-center animate-in slide-in-from-top-5">
+          <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 shadow-lg backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 text-green-400" />
+              <p className="text-green-400 text-sm font-medium">
+                Your request has been raised successfully.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-6">
         {/* Header with Back Button */}
         <div className="flex items-center justify-between">
@@ -1895,15 +1911,6 @@ finally {
                 ))}
               </div>
             </div>
-
-            {/* Success Message */}
-            {showSuccessMessage && (
-              <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4">
-                <p className="text-green-400 text-sm text-center">
-                  Your request has been raise successfully.
-                </p>
-              </div>
-            )}
 
             {/* Submit Button */}
             <div className="flex justify-center gap-3 pt-2">
